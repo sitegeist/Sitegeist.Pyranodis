@@ -11,6 +11,11 @@ use Neos\Utility\Files;
 #[Flow\Scope("singleton")]
 class NodeTypeCommandController extends CommandController
 {
+    /**
+     * @param string $entityName
+     * @param string|null $selectedProperties
+     * @return void
+     */
     public function kickstartWithSchemaOrgCommand(string $entityName, ?string $selectedProperties = null): void
     {
         $schemas = \json_decode(
