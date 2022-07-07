@@ -16,7 +16,7 @@ class NodeTypeCommandController extends CommandController
         $schemas = \json_decode(
             Files::getFileContents('https://schema.org/version/latest/schemaorg-current-https.jsonld'),
             true,
-            JSON_PRETTY_PRINT
+            JSON_THROW_ON_ERROR
         );
 
         $entitySchema = null;
@@ -25,17 +25,29 @@ class NodeTypeCommandController extends CommandController
         foreach ($schemas['@graph'] as $schema) {
             if (
                 $schema['@type'] === 'rdf:Property'
-                && in_array(
-                    ['@id' => 'schema:' . $entityName],
-                    $schema['schema:domainIncludes'] ?? []
-                )) {
-
+                && (
+                    in_array(
+                        ['@id' => 'schema:' . $entityName],
+                        $schema['schema:domainIncludes'] ?? []
+                    )
+                    || ($schema['schema:domainIncludes'] ?? []) === ['@id' => 'schema:' . $entityName]
+                )
+            ) {
                 $propertySchemas[] = $schema;
             }
             if ($schema['@id'] === 'schema:' . $entityName) {
                 $entitySchema = $schema;
             }
         }
+        usort(
+            $propertySchemas,
+            function (array $schemaA, array $schemaB) {
+                $labelA = is_array($schemaA['rdfs:label']) ? $schemaA['rdfs:label']['@value'] : $schemaA['rdfs:label'];
+                $labelB = is_array($schemaB['rdfs:label']) ? $schemaB['rdfs:label']['@value'] : $schemaB['rdfs:label'];
+
+                return $labelA <=> $labelB;
+            }
+        );
 
         if (is_null($entitySchema)) {
             throw new \InvalidArgumentException('Could not resolve entity ' . $entityName, 1657190607);
@@ -44,7 +56,9 @@ class NodeTypeCommandController extends CommandController
         if (is_null($selectedProperties)) {
             $propertyOptions = [];
             foreach ($propertySchemas as $id => $propertySchema) {
-                $propertyOptions[] = '[' . $id . '] ' . $propertySchema['rdfs:label'] . ' - ' . \mb_substr($propertySchema['rdfs:comment'], 0, 150);
+                $label = is_array($propertySchema['rdfs:label']) ? $propertySchema['rdfs:label']['@value'] : $propertySchema['rdfs:label'];
+                $comment = is_array($propertySchema['rdfs:comment']) ? $propertySchema['rdfs:comment']['@value'] : $propertySchema['rdfs:comment'];
+                $propertyOptions[] = '[' . $id . ' | ' . $label . '] '  . \mb_substr(\str_replace("\n", ' ', $comment), 0, 150);
             }
             $selectedProperties = $this->output->ask(
                 array_merge(
