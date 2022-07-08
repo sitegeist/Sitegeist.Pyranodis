@@ -6,6 +6,11 @@
         "php": "^8.1",
         "sitegeist/nodemerobis": "*"
     },
+    "require-dev": {
+        "sitegeist/nodemerobis": "dev-main",
+        "phpstan/phpstan": "^1.8",
+        "squizlabs/php_codesniffer": "^3.7"
+    },
     "autoload": {
         "psr-4": {
             "Sitegeist\\Pyranodis\\": "Classes/"
@@ -14,6 +19,23 @@
     "extra": {
         "neos": {
             "package-key": "Sitegeist.Pyranodis"
+        }
+    },
+    "scripts": {
+        "fix:style": "phpcbf --colors --standard=PSR12 Classes",
+        "test:style": "phpcs --colors -n --standard=PSR12 Classes",
+        "test:stan": "phpstan analyse -l 9 Classes",
+        "test": ["composer install", "composer test:style" , "composer test:stan"]
+    },
+    "repositories": {
+        "sitegeist/nodemerobis": {
+            "type": "vcs",
+            "url": "https://github.com/sitegeist/Sitegeist.Nodemerobis.git"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "neos/composer-plugin": true
         }
     }
 }
