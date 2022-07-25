@@ -4,10 +4,10 @@
     "license": "GPL-3.0-or-later",
     "require": {
         "php": "^8.1",
-        "sitegeist/nodemerobis": "*"
+        "sitegeist/noderobis": "*"
     },
     "require-dev": {
-        "sitegeist/nodemerobis": "dev-main",
+        "sitegeist/noderobis": "dev-main",
         "phpstan/phpstan": "^1.8",
         "squizlabs/php_codesniffer": "^3.7"
     },
@@ -28,9 +28,9 @@
         "test": ["composer install", "composer test:style" , "composer test:stan"]
     },
     "repositories": {
-        "sitegeist/nodemerobis": {
+        "sitegeist/noderobis": {
             "type": "vcs",
-            "url": "https://github.com/sitegeist/Sitegeist.Nodemerobis.git"
+            "url": "https://github.com/sitegeist/Sitegeist.Noderobis.git"
         }
     },
     "config": {
