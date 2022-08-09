@@ -34,15 +34,21 @@ class SchemaOrgProperty
     {
         return new self(
             \mb_substr($jsonArray['@id'], 7),
-            $jsonArray['rdfs:comment'],
-            $jsonArray['rdfs:label'],
-            array_map(
-                fn (array $domainInclusion): string => \mb_substr($domainInclusion['@id'], 7),
-                array_key_exists('@id', $jsonArray['schema:domainIncludes'])
-                    ? [$jsonArray['schema:domainIncludes']]
-                    : $jsonArray['schema:domainIncludes']
-            ),
-            isset($jsonArray['schema:rangeIncludes'])
+            is_array($jsonArray['rdfs:comment'])
+                ? $jsonArray['rdfs:comment']['@value']
+                : $jsonArray['rdfs:comment'],
+            is_array($jsonArray['rdfs:label'])
+                ? $jsonArray['rdfs:label']['@value']
+                : $jsonArray['rdfs:label'],
+            array_key_exists('schema:domainIncludes', $jsonArray)
+                ? array_map(
+                    fn (array $domainInclusion): string => \mb_substr($domainInclusion['@id'], 7),
+                    array_key_exists('@id', $jsonArray['schema:domainIncludes'])
+                        ? [$jsonArray['schema:domainIncludes']]
+                        : $jsonArray['schema:domainIncludes']
+                )
+                : [],
+            array_key_exists('schema:rangeIncludes', $jsonArray)
                 ? array_map(
                 fn (array $rangeIncludes): string => \mb_substr($rangeIncludes['@id'], 7),
                 array_key_exists('@id', $jsonArray['schema:rangeIncludes'])

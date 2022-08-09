@@ -53,6 +53,10 @@ class SchemaOrgGraph
         $classes = [];
         $properties = [];
         foreach ($jsonArray as $node) {
+            if (is_array($node['@type'])) {
+                // these are meta types like data types and can be ignored
+                continue;
+            }
             $type = SchemaOrgType::tryFrom($node['@type']);
             if ($type === SchemaOrgType::TYPE_CLASS) {
                 $classes[] = SchemaOrgClass::fromSchemaOrgJsonArray($node);
