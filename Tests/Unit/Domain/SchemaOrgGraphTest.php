@@ -19,7 +19,7 @@ use Sitegeist\Pyranodis\Domain\SchemaOrgProperty;
 class SchemaOrgGraphTest extends TestCase
 {
     /**
-     * @dataProvider graphProvider
+     * @dataProvider serializedGraphProvider
      * @param array<string,mixed> $sample
      */
     public function testFromSchemaOrgJsonArray(array $sample, SchemaOrgGraph $expectedClass): void
@@ -30,7 +30,7 @@ class SchemaOrgGraphTest extends TestCase
     /**
      * @return array<int,array<int,array<string,mixed>|SchemaOrgGraph>>
      */
-    public function graphProvider(): array
+    public function serializedGraphProvider(): array
     {
         return [
             [
@@ -153,6 +153,9 @@ class SchemaOrgGraphTest extends TestCase
                             'musicGroupMember',
                             [
                                 'MusicGroup'
+                            ],
+                            [
+                                'Person'
                             ]
                         ),
                         new SchemaOrgProperty(
@@ -161,6 +164,9 @@ class SchemaOrgGraphTest extends TestCase
                             'hasOccupation',
                             [
                                 'Person'
+                            ],
+                            [
+                                'Occupation'
                             ]
                         ),
                         new SchemaOrgProperty(
@@ -170,6 +176,10 @@ class SchemaOrgGraphTest extends TestCase
                             [
                                 'ListItem',
                                 'CreativeWork'
+                            ],
+                            [
+                                'Integer',
+                                'Text'
                             ]
                         )
                     )

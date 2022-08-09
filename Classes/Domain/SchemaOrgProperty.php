@@ -15,12 +15,14 @@ class SchemaOrgProperty
 {
     /**
      * @param array<int,string> $domainIncludes
+     * @param array<int,string> $rangeIncludes
      */
     public function __construct(
         public readonly string $id,
         public readonly string $comment,
         public readonly string $label,
-        public readonly array $domainIncludes
+        public readonly array $domainIncludes,
+        public readonly array $rangeIncludes
     ) {
     }
 
@@ -39,12 +41,39 @@ class SchemaOrgProperty
                 array_key_exists('@id', $jsonArray['schema:domainIncludes'])
                     ? [$jsonArray['schema:domainIncludes']]
                     : $jsonArray['schema:domainIncludes']
-            )
+            ),
+            isset($jsonArray['schema:rangeIncludes'])
+                ? array_map(
+                fn (array $rangeIncludes): string => \mb_substr($rangeIncludes['@id'], 7),
+                array_key_exists('@id', $jsonArray['schema:rangeIncludes'])
+                    ? [$jsonArray['schema:rangeIncludes']]
+                    : $jsonArray['schema:rangeIncludes']
+                )
+                : []
         );
     }
 
     public function isMemberOfClass(string $className): bool
     {
         return in_array($className, $this->domainIncludes);
+    }
+
+    /**
+     * @return array<int,string>
+     * @todo add value object support
+     */
+    public function getTypeSuggestions(): array
+    {
+        return array_filter(array_map(
+            fn (string $schemaOrgType): ?string => match($schemaOrgType) {
+                'Text' => 'string',
+                'Integer' => 'integer',
+                'Date', 'Time', 'DateTime' => '\DateTime',
+                'Boolean' => 'boolean',
+                'Number' => 'float',
+                default => null
+            },
+            $this->rangeIncludes
+        ));
     }
 }

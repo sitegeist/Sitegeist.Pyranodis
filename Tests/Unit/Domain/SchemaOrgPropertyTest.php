@@ -65,6 +65,9 @@ class SchemaOrgPropertyTest extends TestCase
                         'DefinedRegion',
                         'GeoCoordinates',
                         'GeoShape'
+                    ],
+                    [
+                        'Text'
                     ]
                 )
             ],
@@ -93,6 +96,9 @@ class SchemaOrgPropertyTest extends TestCase
                     'ingredients',
                     [
                         'Recipe'
+                    ],
+                    [
+                        'Text'
                     ]
                 )
             ]
