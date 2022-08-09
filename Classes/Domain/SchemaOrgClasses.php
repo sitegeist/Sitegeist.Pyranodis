@@ -26,6 +26,17 @@ class SchemaOrgClasses implements \IteratorAggregate
         $this->classes = $classes;
     }
 
+    public function getById(string $id): ?SchemaOrgClass
+    {
+        foreach ($this->classes as $class) {
+            if ($class->id === $id) {
+                return $class;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * @return \ArrayIterator<int,SchemaOrgClass>
      */

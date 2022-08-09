@@ -69,6 +69,29 @@ class SchemaOrgGraph
 
     public function getPropertiesForClassName(string $className): SchemaOrgProperties
     {
-        return new SchemaOrgProperties();
+        $class = $this->classes->getById($className);
+        if (!$class instanceof SchemaOrgClass) {
+            throw new \InvalidArgumentException('Unknown class ' . $className, 1660045931);
+        }
+        $includedProperties = [];
+        foreach ($this->properties as $property) {
+            if ($property->isMemberOfClass($className)) {
+                $includedProperties[] = $property;
+            }
+        }
+
+        usort(
+            $includedProperties,
+            fn (SchemaOrgProperty $a, SchemaOrgProperty $b): int => $a->id <=> $b->id
+        );
+
+        foreach ($class->parentClassIds as $parentClassName) {
+            $includedProperties = array_merge(
+                $includedProperties,
+                $this->getPropertiesForClassName($parentClassName)->getIterator()->getArrayCopy()
+            );
+        }
+
+        return new SchemaOrgProperties(...$includedProperties);
     }
 }

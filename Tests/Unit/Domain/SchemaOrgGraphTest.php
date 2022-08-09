@@ -178,9 +178,80 @@ class SchemaOrgGraphTest extends TestCase
         ];
     }
 
-    /*
+    /**
+     * @dataProvider propertiesForClassNameProvider
+     */
     public function testGetPropertiesForClassName(SchemaOrgGraph $subject, string $className, SchemaOrgProperties $expectedProperties): void
     {
         Assert::assertEquals($expectedProperties, $subject->getPropertiesForClassName($className));
-    }*/
+    }
+
+    /**
+     * @return array<int,<array<int,SchemaOrgGraph|string|SchemaOrgProperties>>
+     */
+    public function propertiesForClassNameProvider(): array
+    {
+        $thingClass = new SchemaOrgClass(
+            'Thing',
+            'The most generic type of item.',
+            'Thing',
+            []
+        );
+        $productClass = new SchemaOrgClass(
+            'Product',
+            'Any offered product or service. For example: a pair of shoes; a concert ticket; the rental of a car; a haircut; or an episode of a TV show streamed online.',
+            'Product',
+            [
+                'Thing'
+            ]
+        );
+        $nameProperty = new SchemaOrgProperty(
+            'name',
+            'The name of the item.',
+            'name',
+            [
+                'Thing'
+            ],
+            [
+                'Text'
+            ]
+        );
+        $mpnProperty = new SchemaOrgProperty(
+            'mpn',
+            'The Manufacturer Part Number (MPN) of the product, or the product to which the offer refers.',
+            'mpn',
+            [
+                'Demand',
+                'Offer',
+                'Product'
+            ],
+            [
+                'Text'
+            ]
+        );
+
+        $graph = new SchemaOrgGraph(
+            new SchemaOrgClasses(
+                $thingClass,
+                $productClass
+            ),
+            new SchemaOrgProperties(
+                $nameProperty,
+                $mpnProperty
+            )
+        );
+
+        return [
+            [
+                $graph,
+                'Thing',
+                new SchemaOrgProperties($nameProperty)
+            ],
+            [
+                $graph,
+                'Product',
+                new SchemaOrgProperties($mpnProperty, $nameProperty)
+            ]
+        ];
+    }
 }
