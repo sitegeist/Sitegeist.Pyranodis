@@ -26,6 +26,22 @@ class SchemaOrgProperties implements \IteratorAggregate
         $this->properties = $properties;
     }
 
+    public function getById(string $id): ?SchemaOrgProperty
+    {
+        foreach ($this->properties as $property) {
+            if ($property->id === $id) {
+                return $property;
+            }
+        }
+
+        return null;
+    }
+
+    public function getByIndex(int $index): ?SchemaOrgProperty
+    {
+        return $this->properties[$index] ?? null;
+    }
+
     /**
      * @return \ArrayIterator<int,SchemaOrgProperty>
      */

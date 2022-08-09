@@ -72,12 +72,12 @@ class SchemaOrgProperty
     {
         return array_filter(array_map(
             fn (string $schemaOrgType): ?string => match($schemaOrgType) {
-                'Text' => 'string',
                 'Integer' => 'integer',
-                'Date', 'Time', 'DateTime' => '\DateTime',
+                'Date', 'Time', 'DateTime' => 'DateTime',
                 'Boolean' => 'boolean',
                 'Number' => 'float',
-                default => null
+                'ImageObject' => 'Neos\Media\Domain\Model\ImageInterface',
+                default => 'string'
             },
             $this->rangeIncludes
         ));
