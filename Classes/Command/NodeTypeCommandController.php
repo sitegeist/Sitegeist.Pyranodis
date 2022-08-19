@@ -25,7 +25,7 @@ use Sitegeist\Pyranodis\Domain\SchemaOrgProperties;
 use Sitegeist\Pyranodis\Domain\SchemaOrgProperty;
 
 #[Flow\Scope("singleton")]
-class NodeTypeCommandController extends \Sitegeist\Noderobis\Command\NodeTypeCommandController
+class NodeTypeCommandController extends \Sitegeist\Noderobis\Command\AbstractCommandController
 {
     public function kickstartFromSchemaOrgCommand(string $className, ?string $packageKey = null, ?string $prefix = null): void
     {
