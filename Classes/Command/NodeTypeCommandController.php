@@ -64,20 +64,15 @@ class NodeTypeCommandController extends \Sitegeist\Noderobis\Command\AbstractCom
             $prefix = $this->askForPrefix();
         }
 
-        $nodeType = $this->nodeTypeGenerator->generateNodeType(
+        $this->generateNodeTypeFromSpecification(
             new NodeTypeSpecification(
                 new NodeTypeNameSpecification($package->getPackageKey(), $prefix . '.' . $className),
                 new NodeTypeNameSpecificationCollection(),
                 new PropertySpecificationCollection(...$propertySpecifications),
                 new TetheredNodeSpecificationCollection(),
                 false
-            )
-        );
-
-        $this->applyModification(
-            true,
-            $this->createNodeTypeYamlFileModificationGenerator->generateModification($package, $nodeType),
-            $this->createFusionRendererModificationGenerator->generateModification($package, $nodeType),
+            ),
+            $package
         );
     }
 
