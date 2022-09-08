@@ -23,17 +23,19 @@ use Sitegeist\Noderobis\Domain\Specification\TetheredNodeSpecificationCollection
 use Sitegeist\Pyranodis\Domain\SchemaOrgGraph;
 use Sitegeist\Pyranodis\Domain\SchemaOrgProperties;
 use Sitegeist\Pyranodis\Domain\SchemaOrgProperty;
+use Sitegeist\Pyranodis\Domain\SchemaSelectionWizard;
 
 #[Flow\Scope("singleton")]
 class NodeTypeCommandController extends \Sitegeist\Noderobis\Command\AbstractCommandController
 {
     public function kickstartFromSchemaOrgCommand(string $className, ?string $packageKey = null, ?string $prefix = null): void
     {
+        $wizard = new SchemaSelectionWizard($this->output);
         $graph = SchemaOrgGraph::createFromRemoteResource();
 
         $package = $this->determinePackage($packageKey);
         $availableProperties = $graph->getPropertiesForClassName($className);
-        $selectedProperties = $this->askForProperties($className, $availableProperties);
+        $selectedProperties = $wizard->askForProperties($className, $availableProperties);
 
         $propertySpecifications = [];
         foreach (Arrays::trimExplode(',', $selectedProperties) as $selectedProperty) {
@@ -61,7 +63,7 @@ class NodeTypeCommandController extends \Sitegeist\Noderobis\Command\AbstractCom
         }
 
         if (is_null($prefix)) {
-            $prefix = $this->askForPrefix();
+            $prefix = $wizard->askForPrefix();
         }
 
         $this->generateNodeTypeFromSpecification(
@@ -73,57 +75,6 @@ class NodeTypeCommandController extends \Sitegeist\Noderobis\Command\AbstractCom
                 false
             ),
             $package
-        );
-    }
-
-    private function askForProperties(string $entityName, SchemaOrgProperties $availableProperties): string
-    {
-        $propertyOptions = [];
-        foreach ($availableProperties as $i => $property) {
-            $propertyOptions[] =
-                '[' . $i . ' | ' . $property->id . '] '
-                . \mb_substr(\str_replace("\n", ' ', $property->comment), 0, 150);
-        }
-        return $this->output->ask(
-            array_merge(
-                [
-                    'Which properties of ' . $entityName . ' do you want to use?'
-                ],
-                $propertyOptions,
-                [
-                    ''
-                ]
-            ),
-        );
-    }
-
-    private function askForPropertyType(SchemaOrgProperty $property): string
-    {
-        $propertyTypeOptions = [];
-        foreach ($property->getTypeSuggestions() as $i => $propertyType) {
-            $propertyTypeOptions[] = '[' . $i . '] ' . $propertyType;
-        }
-        return $this->output->ask(
-            array_merge(
-                [
-                    'Which type do you want to use for property ' . $property->id . '?'
-                ],
-                $propertyTypeOptions,
-                [
-                    ''
-                ]
-            ),
-        );
-    }
-
-    private function askForPrefix(): string
-    {
-        return $this->output->ask(
-            array_merge(
-                [
-                    'Which prefix do you want to use (e.g. Document,Content,Mixin)?'
-                ]
-            ),
         );
     }
 }
