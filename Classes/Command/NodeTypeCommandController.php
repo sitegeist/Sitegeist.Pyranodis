@@ -9,7 +9,9 @@ declare(strict_types=1);
 namespace Sitegeist\Pyranodis\Command;
 
 use Neos\Flow\Annotations as Flow;
+use Neos\Flow\Cli\CommandController;
 use Neos\Utility\Arrays;
+use Sitegeist\Noderobis\Domain\Generator\NodeTypeGenerator;
 use Sitegeist\Noderobis\Domain\Specification\NodeTypeNameSpecification;
 use Sitegeist\Noderobis\Domain\Specification\NodeTypeNameSpecificationCollection;
 use Sitegeist\Noderobis\Domain\Specification\NodeTypeSpecification;
@@ -19,6 +21,9 @@ use Sitegeist\Noderobis\Domain\Specification\PropertyNameSpecification;
 use Sitegeist\Noderobis\Domain\Specification\PropertySpecification;
 use Sitegeist\Noderobis\Domain\Specification\PropertySpecificationCollection;
 use Sitegeist\Noderobis\Domain\Specification\TetheredNodeSpecificationCollection;
+use Sitegeist\Noderobis\Domain\Wizard\DetermineFlowPackageWizard;
+use Sitegeist\Noderobis\Domain\Wizard\GenerateCodeWizard;
+use Sitegeist\Noderobis\Domain\Wizard\SpecificationRefinementWizard;
 use Sitegeist\Pyranodis\Domain\PropertyTypeResolver;
 use Sitegeist\Pyranodis\Domain\SchemaOrgGraph;
 use Sitegeist\Pyranodis\Domain\SchemaOrgProperty;
@@ -26,10 +31,13 @@ use Sitegeist\Pyranodis\Domain\SchemaSelectionWizard;
 use Sitegeist\Pyranodis\Domain\SuperTypeResolver;
 
 #[Flow\Scope("singleton")]
-class NodeTypeCommandController extends \Sitegeist\Noderobis\Command\AbstractCommandController
+class NodeTypeCommandController extends CommandController
 {
     #[Flow\Inject]
     protected SuperTypeResolver $superTypeResolver;
+
+    #[Flow\Inject]
+    protected NodeTypeGenerator $nodeTypeGenerator;
 
     public function kickstartFromSchemaOrgCommand(string $className, ?string $packageKey = null, ?string $prefix = null): void
     {
@@ -37,7 +45,9 @@ class NodeTypeCommandController extends \Sitegeist\Noderobis\Command\AbstractCom
         $propertyTypeResolver = new PropertyTypeResolver();
         $graph = SchemaOrgGraph::createFromRemoteResource();
 
-        $package = $this->determinePackage($packageKey);
+        $determineFlowPackageWizard = new DetermineFlowPackageWizard($this->output);
+        $package = $determineFlowPackageWizard->determineFlowPackage($packageKey);
+
         $availableProperties = $graph->getPropertiesForClassName($className);
         $selectedProperties = $wizard->askForProperties($className, $availableProperties);
 
@@ -73,15 +83,20 @@ class NodeTypeCommandController extends \Sitegeist\Noderobis\Command\AbstractCom
             $prefix = $wizard->askForPrefix();
         }
 
-        $this->generateNodeTypeFromSpecification(
-            new NodeTypeSpecification(
-                new NodeTypeNameSpecification($package->getPackageKey(), $prefix . '.' . $className),
-                new NodeTypeNameSpecificationCollection(...$superTypeSpecifications),
-                new PropertySpecificationCollection(...$propertySpecifications),
-                new TetheredNodeSpecificationCollection(),
-                false
-            ),
-            $package
+        $nodeTypeSpecification = new NodeTypeSpecification(
+            new NodeTypeNameSpecification($package->getPackageKey(), $prefix . '.' . $className),
+            new NodeTypeNameSpecificationCollection(...$superTypeSpecifications),
+            new PropertySpecificationCollection(...$propertySpecifications),
+            new TetheredNodeSpecificationCollection(),
+            false
         );
+
+        $specificationRefinementWizard = new SpecificationRefinementWizard($this->output);
+        $nodeTypeSpecification = $specificationRefinementWizard->refineSpecification($nodeTypeSpecification);
+
+        $nodeType = $this->nodeTypeGenerator->generateNodeType($nodeTypeSpecification);
+
+        $generateCodeWizard = new GenerateCodeWizard($this->output);
+        $generateCodeWizard->generateCode($nodeType, $package);
     }
 }
