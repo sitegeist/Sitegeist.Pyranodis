@@ -5,13 +5,12 @@
  */
 
 declare(strict_types=1);
-
 namespace Sitegeist\Pyranodis\Domain;
 
 use Neos\Flow\Annotations as Flow;
 
 #[Flow\Proxy(false)]
-class SchemaOrgProperty
+class SchemaOrgProperty implements \Stringable
 {
     /**
      * @param array<int,string> $domainIncludes
@@ -70,7 +69,7 @@ class SchemaOrgProperty
      */
     public function getTypeSuggestions(): array
     {
-        return array_filter(array_map(
+        return array_filter(array_unique(array_map(
             fn (string $schemaOrgType): ?string => match($schemaOrgType) {
                 'Integer' => 'integer',
                 'Date', 'Time', 'DateTime' => 'DateTime',
@@ -80,6 +79,11 @@ class SchemaOrgProperty
                 default => 'string'
             },
             $this->rangeIncludes
-        ));
+        )));
+    }
+
+    public function __toString(): string
+    {
+        return $this->id;
     }
 }

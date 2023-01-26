@@ -10,6 +10,7 @@ namespace Sitegeist\Pyranodis\Tests\Unit\Domain;
 
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
+use Sitegeist\Pyranodis\Domain\GroupedSchemaOrgProperties;
 use Sitegeist\Pyranodis\Domain\SchemaOrgClass;
 use Sitegeist\Pyranodis\Domain\SchemaOrgClasses;
 use Sitegeist\Pyranodis\Domain\SchemaOrgGraph;
@@ -191,15 +192,15 @@ class SchemaOrgGraphTest extends TestCase
     /**
      * @dataProvider propertiesForClassNameProvider
      */
-    public function testGetPropertiesForClassName(SchemaOrgGraph $subject, string $className, SchemaOrgProperties $expectedProperties): void
+    public function testGetPropertiesForClassName(SchemaOrgGraph $subject, string $className, GroupedSchemaOrgProperties $expectedProperties): void
     {
         Assert::assertEquals($expectedProperties, $subject->getPropertiesForClassName($className));
     }
 
     /**
-     * @return array<int,<array<int,SchemaOrgGraph|string|SchemaOrgProperties>>
+     * @return iterable<string,<array<int,mixed>>
      */
-    public function propertiesForClassNameProvider(): array
+    public function propertiesForClassNameProvider(): iterable
     {
         $thingClass = new SchemaOrgClass(
             'Thing',
@@ -251,17 +252,21 @@ class SchemaOrgGraphTest extends TestCase
             )
         );
 
-        return [
-            [
-                $graph,
-                'Thing',
-                new SchemaOrgProperties($nameProperty)
-            ],
-            [
-                $graph,
-                'Product',
-                new SchemaOrgProperties($mpnProperty, $nameProperty)
-            ]
+        yield [
+            'subject' => $graph,
+            'className' => 'Thing',
+            new GroupedSchemaOrgProperties([
+                'Thing' => new SchemaOrgProperties($nameProperty)
+            ])
+        ];
+
+        yield [
+            'subject' => $graph,
+            'className' => 'Product',
+            new GroupedSchemaOrgProperties([
+                'Product' => new SchemaOrgProperties($mpnProperty),
+                'Thing' => new SchemaOrgProperties($nameProperty)
+            ])
         ];
     }
 }

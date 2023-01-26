@@ -71,7 +71,7 @@ class SchemaOrgGraph
         );
     }
 
-    public function getPropertiesForClassName(string $className): SchemaOrgProperties
+    public function getPropertiesForClassName(string $className): GroupedSchemaOrgProperties
     {
         $class = $this->classes->getById($className);
         if (!$class instanceof SchemaOrgClass) {
@@ -80,14 +80,16 @@ class SchemaOrgGraph
         $includedProperties = [];
         foreach ($this->properties as $property) {
             if ($property->isMemberOfClass($className)) {
-                $includedProperties[] = $property;
+                $includedProperties[$className][] = $property;
             }
         }
 
-        usort(
-            $includedProperties,
-            fn (SchemaOrgProperty $a, SchemaOrgProperty $b): int => $a->id <=> $b->id
-        );
+        foreach ($includedProperties as $className => &$properties) {
+            uasort(
+                $properties,
+                fn (SchemaOrgProperty $a, SchemaOrgProperty $b): int => $a->id <=> $b->id
+            );
+        }
 
         foreach ($class->parentClassIds as $parentClassName) {
             $includedProperties = array_merge(
@@ -96,6 +98,14 @@ class SchemaOrgGraph
             );
         }
 
-        return new SchemaOrgProperties(...$includedProperties);
+        return new GroupedSchemaOrgProperties(
+            array_map(
+                fn (array|SchemaOrgProperties $properties): SchemaOrgProperties
+                    => $properties instanceof SchemaOrgProperties
+                        ? $properties
+                        : new SchemaOrgProperties(...$properties),
+                $includedProperties
+            )
+        );
     }
 }

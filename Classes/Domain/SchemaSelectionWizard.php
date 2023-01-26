@@ -10,33 +10,57 @@ namespace Sitegeist\Pyranodis\Domain;
 
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Cli\ConsoleOutput;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 
 #[Flow\Proxy(false)]
 class SchemaSelectionWizard
 {
+    public const SELECTED_SUPERTYPE_NONE = 'none';
+
     public function __construct(
         private readonly ConsoleOutput $output
     ) {
     }
 
-    public function askForProperties(string $entityName, SchemaOrgProperties $availableProperties): string
-    {
+    /**
+     * @return array<string>
+     */
+    public function askForProperties(
+        string $entityName,
+        GroupedSchemaOrgProperties $availableProperties,
+        ?string $extensionOptions
+    ): array {
         $propertyOptions = [];
-        foreach ($availableProperties as $i => $property) {
-            $propertyOptions[] =
-                '[' . $i . ' | ' . $property->id . '] '
-                . \mb_substr(\str_replace("\n", ' ', $property->comment), 0, 150);
+        $autoCompleterValues = [];
+        $i = 0;
+        foreach ($availableProperties as $groupName => $properties) {
+            if ($properties->isEmpty()) {
+                continue;
+            }
+            if ($i !== 0) {
+                $propertyOptions[str_repeat(' ', 2 * $i)] = '';
+            }
+            $propertyOptions[str_repeat(' ', 2 * $i + 1)] = '     --- Properties from ' . $groupName . ' ---';
+            foreach ($properties as $property) {
+                $propertyOptions[$property->id]
+                    = \mb_substr(\str_replace("\n", ' ', $property->comment), 0, 150);
+                $autoCompleterValues[] = $property->id;
+            }
+            $i++;
         }
-        return $this->output->ask(
-            array_merge(
-                [
-                    'Which properties of ' . $entityName . ' do you want to use?'
-                ],
-                $propertyOptions,
-                [
-                    ''
-                ]
-            ),
+
+        if ($extensionOptions) {
+            $propertyOptions['-e'] = 'Show additional properties that have been filtered out'
+                . ' due to missing editor options (' . $extensionOptions . ')';
+            $autoCompleterValues[] = '-e';
+        }
+
+        return $this->output->askQuestion(
+            (new ChoiceQuestion(
+                'Which properties of ' . $entityName . ' do you want to use?',
+                $propertyOptions
+            ))->setMultiselect(true)
+            ->setAutocompleterValues($autoCompleterValues)
         );
     }
 
@@ -73,22 +97,18 @@ class SchemaSelectionWizard
     /**
      * @param array<int,string> $superTypeCandidates
      */
-    public function askForSupertypesByProperty(string $propertyName, array $superTypeCandidates): int
+    public function askForSupertypesByProperty(string $propertyName, array $superTypeCandidates): string
     {
-        $superTypeOptions = [];
-        foreach ($superTypeCandidates as $i => $superTypeName) {
-            $superTypeOptions[] = '[' . $i . '] ' . $superTypeName;
-        }
-        return (int)$this->output->ask(
-            array_merge(
-                [
-                    'There are eligible supertypes that also declare property ' . $propertyName . ', which one do you want to use?'
-                ],
-                $superTypeOptions,
-                [
-                    ''
-                ]
-            ),
+        return $this->output->askQuestion(
+            (new ChoiceQuestion(
+                'There are eligible supertypes that also declare property ' . $propertyName
+                    . ', which one do you want to use?',
+                array_merge(
+                    [self::SELECTED_SUPERTYPE_NONE],
+                    $superTypeCandidates
+                ),
+                null
+            ))->setAutocompleterValues($superTypeCandidates)
         );
     }
 }

@@ -8,9 +8,10 @@ declare(strict_types=1);
 
 namespace Sitegeist\Pyranodis\Command;
 
+use Neos\ContentRepository\Domain\Service\NodeTypeManager;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Cli\CommandController;
-use Neos\Utility\Arrays;
+use Neos\Flow\Configuration\ConfigurationManager;
 use Sitegeist\Noderobis\Domain\Generator\NodeTypeGenerator;
 use Sitegeist\Noderobis\Domain\Specification\NodeTypeNameSpecification;
 use Sitegeist\Noderobis\Domain\Specification\NodeTypeNameSpecificationCollection;
@@ -31,52 +32,76 @@ use Sitegeist\Pyranodis\Domain\SchemaSelectionWizard;
 use Sitegeist\Pyranodis\Domain\SuperTypeResolver;
 
 #[Flow\Scope("singleton")]
-class NodeTypeCommandController extends CommandController
+class KickstartCommandController extends CommandController
 {
-    #[Flow\Inject]
-    protected SuperTypeResolver $superTypeResolver;
+    public function __construct(
+        private readonly SuperTypeResolver $superTypeResolver,
+        private readonly NodeTypeGenerator $nodeTypeGenerator,
+        private readonly NodeTypeManager $nodeTypeManager,
+        private readonly ConfigurationManager $configurationManager
+    ) {
+        parent::__construct();
+    }
 
-    #[Flow\Inject]
-    protected NodeTypeGenerator $nodeTypeGenerator;
 
-    public function kickstartFromSchemaOrgCommand(string $className, ?string $packageKey = null, ?string $prefix = null): void
-    {
+    public function nodeTypeFromSchemaOrgCommand(
+        string $className,
+        ?string $packageKey = null,
+        ?string $prefix = null
+    ): void {
         $wizard = new SchemaSelectionWizard($this->output);
         $propertyTypeResolver = new PropertyTypeResolver();
         $graph = SchemaOrgGraph::createFromRemoteResource();
 
-        $determineFlowPackageWizard = new DetermineFlowPackageWizard($this->output);
+        $determineFlowPackageWizard = new DetermineFlowPackageWizard();
         $package = $determineFlowPackageWizard->determineFlowPackage($packageKey);
 
-        $availableProperties = $graph->getPropertiesForClassName($className);
-        $selectedProperties = $wizard->askForProperties($className, $availableProperties);
+        $totalAvailableProperties = $graph->getPropertiesForClassName($className);
+        $availableProperties = $totalAvailableProperties
+            ->reduceToManageable(
+                $this->configurationManager->getConfiguration(
+                    'Settings',
+                    'Neos.Neos.userInterface.inspector.dataTypes'
+                ),
+                $this->nodeTypeManager->getNodeTypes(false)
+            );
+        $selectedProperties = $wizard->askForProperties(
+            $className,
+            $availableProperties,
+            implode(', ', $totalAvailableProperties->getDifference($availableProperties)->getAllProperties())
+        );
+        if (in_array('-e', $selectedProperties)) {
+            $availableProperties = $totalAvailableProperties;
+            $selectedProperties = $wizard->askForProperties(
+                $className,
+                $availableProperties,
+                null
+            );
+        }
 
         $superTypeSpecifications = [];
         $propertySpecifications = [];
-        foreach (Arrays::trimExplode(',', $selectedProperties) as $selectedProperty) {
-            if (is_numeric($selectedProperty)) {
-                $property = $availableProperties->getByIndex((int)$selectedProperty);
-            } else {
-                $property = $availableProperties->getById($selectedProperty);
-            }
+        foreach ($selectedProperties as $selectedProperty) {
+            $property = $availableProperties->getById($selectedProperty);
             if (!$property instanceof SchemaOrgProperty) {
                 throw new \InvalidArgumentException('Unknown property ' . $selectedProperty, 1660050534);
             }
 
             $supertypeCandidates = $this->superTypeResolver->resolveSuperTypeCandidatesForPropertyName($property);
             if (!empty($supertypeCandidates)) {
-                $selectedSuperType = $wizard->askForSupertypesByProperty($property->id, $supertypeCandidates);
-                if ($selectedSuperType) {
-                    $superTypeSpecifications[] = NodeTypeNameSpecification::fromString($supertypeCandidates[$selectedSuperType]);
-                } else {
-                    $propertySpecifications[] = new PropertySpecification(
-                        new PropertyNameSpecification($property->id),
-                        $propertyTypeResolver->resolvePropertyType($property, $wizard),
-                        new PropertyLabelSpecification($property->id),
-                        new PropertyDescriptionSpecification($property->comment),
-                    );
+                $selectedSuperTypeName = $wizard->askForSupertypesByProperty($property->id, $supertypeCandidates);
+                if ($selectedSuperTypeName !== SchemaSelectionWizard::SELECTED_SUPERTYPE_NONE) {
+                    $superTypeSpecifications[] = NodeTypeNameSpecification::fromString($selectedSuperTypeName);
+                    continue;
                 }
             }
+
+            $propertySpecifications[] = new PropertySpecification(
+                new PropertyNameSpecification($property->id),
+                $propertyTypeResolver->resolvePropertyType($property, $wizard),
+                new PropertyLabelSpecification($property->id),
+                new PropertyDescriptionSpecification($property->comment),
+            );
         }
 
         if (is_null($prefix)) {
