@@ -16,6 +16,7 @@ use Sitegeist\Noderobis\Domain\Generator\NodeTypeGenerator;
 use Sitegeist\Noderobis\Domain\Specification\NodeTypeNameSpecification;
 use Sitegeist\Noderobis\Domain\Specification\NodeTypeNameSpecificationCollection;
 use Sitegeist\Noderobis\Domain\Specification\NodeTypeSpecification;
+use Sitegeist\Noderobis\Domain\Specification\OptionsSpecification;
 use Sitegeist\Noderobis\Domain\Specification\PropertyDescriptionSpecification;
 use Sitegeist\Noderobis\Domain\Specification\PropertyLabelSpecification;
 use Sitegeist\Noderobis\Domain\Specification\PropertyNameSpecification;
@@ -99,6 +100,7 @@ class KickstartCommandController extends CommandController
             $propertySpecifications[] = new PropertySpecification(
                 new PropertyNameSpecification($property->id),
                 $propertyTypeResolver->resolvePropertyType($property, $wizard),
+                null,
                 new PropertyLabelSpecification($property->id),
                 new PropertyDescriptionSpecification($property->comment),
             );
@@ -113,7 +115,12 @@ class KickstartCommandController extends CommandController
             new NodeTypeNameSpecificationCollection(...$superTypeSpecifications),
             new PropertySpecificationCollection(...$propertySpecifications),
             new TetheredNodeSpecificationCollection(),
-            false
+            false,
+            null,
+            null,
+            new OptionsSpecification([
+                'schemaOrgClass' => 'https://schema.org/' . $className
+            ])
         );
 
         $specificationRefinementWizard = new SpecificationRefinementWizard($this->output);
