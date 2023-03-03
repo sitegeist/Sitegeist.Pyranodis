@@ -11,13 +11,13 @@ namespace Sitegeist\Pyranodis\Domain;
 use Neos\Flow\Annotations as Flow;
 
 /**
- * @implements \IteratorAggregate<int,SchemaOrgClass>
+ * @implements \IteratorAggregate<int|string,SchemaOrgClass>
  */
 #[Flow\Proxy(false)]
 class SchemaOrgClasses implements \IteratorAggregate
 {
     /**
-     * @var array<int,SchemaOrgClass>
+     * @var array<int|string,SchemaOrgClass>
      */
     private readonly array $classes;
 
@@ -38,7 +38,7 @@ class SchemaOrgClasses implements \IteratorAggregate
     }
 
     /**
-     * @return \ArrayIterator<int,SchemaOrgClass>
+     * @return \ArrayIterator<int|string,SchemaOrgClass>
      */
     public function getIterator(): \ArrayIterator
     {

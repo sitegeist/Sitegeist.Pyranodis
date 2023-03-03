@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Sitegeist\Pyranodis\Domain;
 
+use Neos\ContentRepository\Domain\Model\NodeType;
 use Neos\Flow\Annotations as Flow;
 
 /**
@@ -24,6 +25,8 @@ class GroupedSchemaOrgProperties implements \IteratorAggregate
 
     /**
      * @see SchemaOrgProperties::reduceToManageable()
+     * @param array<string,mixed> $declaredPropertyTypes
+     * @param array<int,NodeType> $declaredNodeTypes
      */
     public function reduceToManageable(
         array $declaredPropertyTypes,
@@ -71,7 +74,7 @@ class GroupedSchemaOrgProperties implements \IteratorAggregate
     }
 
     /**
-     * @return array<int,SchemaOrgProperty>
+     * @return array<int|string,SchemaOrgProperty>
      */
     public function getAllProperties(): array
     {

@@ -12,13 +12,13 @@ use Neos\ContentRepository\Domain\Model\NodeType;
 use Neos\Flow\Annotations as Flow;
 
 /**
- * @implements \IteratorAggregate<int,SchemaOrgProperty>
+ * @implements \IteratorAggregate<int|string,SchemaOrgProperty>
  */
 #[Flow\Proxy(false)]
 class SchemaOrgProperties implements \IteratorAggregate
 {
     /**
-     * @var array<int,SchemaOrgProperty>
+     * @var array<int|string,SchemaOrgProperty>
      */
     private readonly array $properties;
 
@@ -37,6 +37,8 @@ class SchemaOrgProperties implements \IteratorAggregate
 
     /**
      * Reduces the set of schema.org properties to the ones manageable by the Neos UI or value objects
+     * @param array<string,mixed> $declaredPropertyTypes
+     * @param array<int,NodeType> $declaredNodeTypes
      */
     public function reduceToManageable(
         array $declaredPropertyTypes,
@@ -76,10 +78,7 @@ class SchemaOrgProperties implements \IteratorAggregate
 
         foreach ($this->properties as $property) {
             foreach ($property->rangeIncludes as $type) {
-                if (in_array(
-                    $type,
-                    $manageablePropertyTypes
-                )) {
+                if (in_array($type, $manageablePropertyTypes)) {
                     $properties[] = $property;
                     continue 2;
                 }
@@ -106,7 +105,7 @@ class SchemaOrgProperties implements \IteratorAggregate
     }
 
     /**
-     * @return \ArrayIterator<int,SchemaOrgProperty>
+     * @return \ArrayIterator<int|string,SchemaOrgProperty>
      */
     public function getIterator(): \ArrayIterator
     {

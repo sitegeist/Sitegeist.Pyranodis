@@ -14,8 +14,10 @@ use Sitegeist\Noderobis\Domain\Specification\PropertyTypeSpecification;
 #[Flow\Proxy(false)]
 class PropertyTypeResolver
 {
-    public function resolvePropertyType(SchemaOrgProperty $property, SchemaSelectionWizard $wizard): PropertyTypeSpecification
-    {
+    public function resolvePropertyType(
+        SchemaOrgProperty $property,
+        SchemaSelectionWizard $wizard
+    ): PropertyTypeSpecification {
         $typeSuggestions = $property->getTypeSuggestions();
         if (count($typeSuggestions) === 1) {
             return new PropertyTypeSpecification($typeSuggestions[0]);

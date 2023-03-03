@@ -26,7 +26,6 @@ class SchemaOrgClass
 
     /**
      * @param array<string,mixed> $jsonArray
-     * @return static
      */
     public static function fromSchemaOrgJsonArray(array $jsonArray): self
     {
@@ -38,7 +37,7 @@ class SchemaOrgClass
             is_array($jsonArray['rdfs:label'])
                 ? $jsonArray['rdfs:label']['@value']
                 : $jsonArray['rdfs:label'],
-            array_key_exists('rdfs:subClassOf',$jsonArray)
+            array_key_exists('rdfs:subClassOf', $jsonArray)
                 ? array_map(
                     fn (array $domainInclusion): string => \mb_substr($domainInclusion['@id'], 7),
                     array_key_exists('@id', $jsonArray['rdfs:subClassOf'])

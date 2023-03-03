@@ -5,6 +5,7 @@
  */
 
 declare(strict_types=1);
+
 namespace Sitegeist\Pyranodis\Domain;
 
 use Neos\Flow\Annotations as Flow;
@@ -27,7 +28,6 @@ class SchemaOrgProperty implements \Stringable
 
     /**
      * @param array<string,mixed> $jsonArray
-     * @return static
      */
     public static function fromSchemaOrgJsonArray(array $jsonArray): self
     {
@@ -49,10 +49,10 @@ class SchemaOrgProperty implements \Stringable
                 : [],
             array_key_exists('schema:rangeIncludes', $jsonArray)
                 ? array_map(
-                fn (array $rangeIncludes): string => \mb_substr($rangeIncludes['@id'], 7),
-                array_key_exists('@id', $jsonArray['schema:rangeIncludes'])
-                    ? [$jsonArray['schema:rangeIncludes']]
-                    : $jsonArray['schema:rangeIncludes']
+                    fn (array $rangeIncludes): string => \mb_substr($rangeIncludes['@id'], 7),
+                    array_key_exists('@id', $jsonArray['schema:rangeIncludes'])
+                        ? [$jsonArray['schema:rangeIncludes']]
+                        : $jsonArray['schema:rangeIncludes']
                 )
                 : []
         );
@@ -69,8 +69,8 @@ class SchemaOrgProperty implements \Stringable
      */
     public function getTypeSuggestions(): array
     {
-        return array_filter(array_unique(array_map(
-            fn (string $schemaOrgType): ?string => match($schemaOrgType) {
+        return array_unique(array_map(
+            fn (string $schemaOrgType): string => match ($schemaOrgType) {
                 'Integer' => 'integer',
                 'Date', 'Time', 'DateTime' => 'DateTime',
                 'Boolean' => 'boolean',
@@ -79,7 +79,7 @@ class SchemaOrgProperty implements \Stringable
                 default => 'string'
             },
             $this->rangeIncludes
-        )));
+        ));
     }
 
     public function __toString(): string
