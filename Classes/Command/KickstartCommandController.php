@@ -8,7 +8,9 @@ declare(strict_types=1);
 
 namespace Sitegeist\Pyranodis\Command;
 
-use Neos\ContentRepository\Domain\Service\NodeTypeManager;
+use Neos\ContentRepository\Core\Factory\ContentRepositoryId;
+use Neos\ContentRepository\Core\NodeType\NodeTypeManager;
+use Neos\ContentRepositoryRegistry\ContentRepositoryRegistry;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Cli\CommandController;
 use Neos\Flow\Configuration\ConfigurationManager;
@@ -35,12 +37,15 @@ use Sitegeist\Pyranodis\Domain\SuperTypeResolver;
 #[Flow\Scope("singleton")]
 class KickstartCommandController extends CommandController
 {
+    private readonly NodeTypeManager $nodeTypeManager;
+
     public function __construct(
         private readonly SuperTypeResolver $superTypeResolver,
         private readonly NodeTypeGenerator $nodeTypeGenerator,
-        private readonly NodeTypeManager $nodeTypeManager,
-        private readonly ConfigurationManager $configurationManager
+        private readonly ConfigurationManager $configurationManager,
+        ContentRepositoryRegistry $contentRepositoryRegistry
     ) {
+        $this->nodeTypeManager = $contentRepositoryRegistry->get(ContentRepositoryId::from('default'))->nodeTypeManager;
         parent::__construct();
     }
 

@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace Sitegeist\Pyranodis\Domain;
 
-use Neos\ContentRepository\Domain\Model\NodeType;
+use Neos\ContentRepository\Core\NodeType\NodeType;
 use Neos\Flow\Annotations as Flow;
 
 /**

@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace Sitegeist\Pyranodis\Domain;
 
-use Neos\ContentRepository\Domain\Service\NodeTypeManager;
+use Neos\ContentRepository\Core\NodeType\NodeTypeManager;
 use Neos\Flow\Annotations as Flow;
 
 #[Flow\Scope("singleton")]
