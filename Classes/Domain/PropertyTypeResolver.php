@@ -12,7 +12,7 @@ use Neos\Flow\Annotations as Flow;
 use Sitegeist\Noderobis\Domain\Specification\PropertyTypeSpecification;
 
 #[Flow\Proxy(false)]
-class PropertyTypeResolver
+final class PropertyTypeResolver
 {
     public function resolvePropertyType(
         SchemaOrgProperty $property,

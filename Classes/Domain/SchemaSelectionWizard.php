@@ -13,12 +13,12 @@ use Neos\Flow\Cli\ConsoleOutput;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 
 #[Flow\Proxy(false)]
-class SchemaSelectionWizard
+final readonly class SchemaSelectionWizard
 {
     public const SELECTED_SUPERTYPE_NONE = 'none';
 
     public function __construct(
-        private readonly ConsoleOutput $output
+        private ConsoleOutput $output
     ) {
     }
 

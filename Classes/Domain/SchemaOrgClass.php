@@ -11,16 +11,16 @@ namespace Sitegeist\Pyranodis\Domain;
 use Neos\Flow\Annotations as Flow;
 
 #[Flow\Proxy(false)]
-class SchemaOrgClass
+final readonly class SchemaOrgClass
 {
     /**
      * @param array<int,string> $parentClassIds
      */
     public function __construct(
-        public readonly string $id,
-        public readonly string $comment,
-        public readonly string $label,
-        public readonly array $parentClassIds,
+        public string $id,
+        public string $comment,
+        public string $label,
+        public array $parentClassIds,
     ) {
     }
 

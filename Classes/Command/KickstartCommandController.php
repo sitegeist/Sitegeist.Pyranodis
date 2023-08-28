@@ -45,7 +45,7 @@ class KickstartCommandController extends CommandController
         private readonly ConfigurationManager $configurationManager,
         ContentRepositoryRegistry $contentRepositoryRegistry
     ) {
-        $this->nodeTypeManager = $contentRepositoryRegistry->get(ContentRepositoryId::from('default'))->nodeTypeManager;
+        $this->nodeTypeManager = $contentRepositoryRegistry->get(ContentRepositoryId::fromString('default'))->getNodeTypeManager();
         parent::__construct();
     }
 

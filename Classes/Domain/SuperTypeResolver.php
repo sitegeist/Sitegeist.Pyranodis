@@ -8,14 +8,15 @@ declare(strict_types=1);
 
 namespace Sitegeist\Pyranodis\Domain;
 
-use Neos\ContentRepository\Core\NodeType\NodeTypeManager;
+use Neos\ContentRepository\Core\Factory\ContentRepositoryId;
+use Neos\ContentRepositoryRegistry\ContentRepositoryRegistry;
 use Neos\Flow\Annotations as Flow;
 
 #[Flow\Scope("singleton")]
 class SuperTypeResolver
 {
     #[Flow\Inject]
-    protected NodeTypeManager $nodeTypeManager;
+    protected ContentRepositoryRegistry $contentRepositoryRegistry;
 
     /**
      * @return array<int,string>
@@ -23,9 +24,9 @@ class SuperTypeResolver
     public function resolveSuperTypeCandidatesForPropertyName(SchemaOrgProperty $property): array
     {
         $supertypeCandidates = [];
-        foreach ($this->nodeTypeManager->getNodeTypes() as $nodeType) {
+        foreach ($this->contentRepositoryRegistry->get(ContentRepositoryId::fromString('default'))->getNodeTypeManager()->getNodeTypes() as $nodeType) {
             if (array_key_exists($property->id, $nodeType->getProperties())) {
-                $supertypeCandidates[] = $nodeType->getName();
+                $supertypeCandidates[] = $nodeType->name->value;
             }
         }
 

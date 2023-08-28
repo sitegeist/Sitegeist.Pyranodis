@@ -15,11 +15,11 @@ use Neos\Flow\Annotations as Flow;
  * @implements \IteratorAggregate<string,SchemaOrgProperties>
  */
 #[Flow\Proxy(false)]
-class GroupedSchemaOrgProperties implements \IteratorAggregate
+final readonly class GroupedSchemaOrgProperties implements \IteratorAggregate
 {
     public function __construct(
         /** @var array<string,SchemaOrgProperties> */
-        private readonly array $properties
+        private array $properties
     ) {
     }
 

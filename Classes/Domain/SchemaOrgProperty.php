@@ -11,18 +11,18 @@ namespace Sitegeist\Pyranodis\Domain;
 use Neos\Flow\Annotations as Flow;
 
 #[Flow\Proxy(false)]
-class SchemaOrgProperty implements \Stringable
+final readonly class SchemaOrgProperty implements \Stringable
 {
     /**
      * @param array<int,string> $domainIncludes
      * @param array<int,string> $rangeIncludes
      */
     public function __construct(
-        public readonly string $id,
-        public readonly string $comment,
-        public readonly string $label,
-        public readonly array $domainIncludes,
-        public readonly array $rangeIncludes
+        public string $id,
+        public string $comment,
+        public string $label,
+        public array $domainIncludes,
+        public array $rangeIncludes
     ) {
     }
 

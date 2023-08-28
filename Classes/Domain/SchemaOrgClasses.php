@@ -14,12 +14,12 @@ use Neos\Flow\Annotations as Flow;
  * @implements \IteratorAggregate<int|string,SchemaOrgClass>
  */
 #[Flow\Proxy(false)]
-class SchemaOrgClasses implements \IteratorAggregate
+final readonly class SchemaOrgClasses implements \IteratorAggregate
 {
     /**
      * @var array<int|string,SchemaOrgClass>
      */
-    private readonly array $classes;
+    private array $classes;
 
     public function __construct(SchemaOrgClass ...$classes)
     {

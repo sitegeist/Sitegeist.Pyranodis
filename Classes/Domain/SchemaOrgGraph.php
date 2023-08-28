@@ -12,11 +12,11 @@ use Neos\Flow\Annotations as Flow;
 use Neos\Utility\Files;
 
 #[Flow\Proxy(false)]
-class SchemaOrgGraph
+final readonly class SchemaOrgGraph
 {
     public function __construct(
-        private readonly SchemaOrgClasses $classes,
-        private readonly SchemaOrgProperties $properties
+        private SchemaOrgClasses $classes,
+        private SchemaOrgProperties $properties
     ) {
     }
 
